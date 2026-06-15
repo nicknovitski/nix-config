@@ -8,6 +8,7 @@
     nixpkgs.config.allowUnfreePackages = [
       "slack"
       "discord"
+      "lmstudio"
     ];
   };
   flake.modules.nixos.home-manager.imports = [
@@ -35,7 +36,7 @@
       };
     };
   };
-  flake.homeModules.git = { pkgs, ... }: {
+  flake.homeModules.git = { pkgs, config, ... }: {
     programs.git = {
       enable = true;
       settings = {
@@ -50,8 +51,8 @@
           ci = "commit";
           cia = "commit --amend";
           co = "checkout";
-          d = "diff --color-words";
-          dc = "diff --cached --color-words";
+          d = "diff";
+          dc = "diff --cached";
           f = "fetch --prune";
           force-push = "push --force-with-lease";
           out = "!cd $(git top)/..";
@@ -70,10 +71,21 @@
         };
         commit.verbose = true;
         credential.helper = if pkgs.stdenv.hostPlatform.isDarwin then "osxkeychain" else "libsecret";
-        color.ui = "auto";
+        color = {
+          diff = "auto";
+          ui = "auto";
+        }
         fetch.pruneTags = true;
         diff.renameLimit = 999999;
       };
+    };
+    programs.bash = {
+      initExtra = ''
+        g() {
+        ${config.programs.zsh.siteFunctions.g}
+        }
+        complete -o bashdefault -o default -o nospace -F __git_wrap__git_main g
+      '';
     };
     programs.zsh = {
       siteFunctions.g = ''
@@ -94,18 +106,18 @@
       inputs.self.homeModules.zed
     ];
     programs.firefox.enable = true;
+    programs.chromium.enable = true;
     programs.nh.enable = true;
     programs.discord.enable = true;
     programs.wezterm.enable = true;
-    programs.zsh = {
-      enable = true;
-    };
+    programs.${if pkgs.stdenv.isDarwin then "zsh" else "bash"}.enable = true;
     home.packages = builtins.attrValues {
       inherit (pkgs)
-        devenv
         fd
         github-cli
         gnugrep # cross-platform consistency
+        lmstudio
+        nixfmt
         ripgrep
         slack
         ;

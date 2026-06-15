@@ -1,5 +1,4 @@
-{ inputs, ... }:
-{
+{ inputs, ... }: {
   flake.modules.darwin.linux-builder = {
     imports = [ inputs.nix-rosetta-builder.darwinModules.default ];
     # see available options in module.nix's `options.nix-rosetta-builder`
